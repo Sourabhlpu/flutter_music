@@ -6,7 +6,6 @@ import 'package:flutter/rendering.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,14 +26,39 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   TabController _tabController;
+  ScrollController _scrollController;
+  ValueNotifier<double> scrollPercent = ValueNotifier(0);
 
   List<Song> songs = [];
+  List<Tab> _tabs;
+
+  double _calculateX(double scrollPercent) {
+    scrollPercent = scrollPercent.clamp(0, 0.5);
+    double percent;
+    if (scrollPercent == 0)
+      percent = 0;
+    else
+      percent = scrollPercent / 0.5;
+
+    double x = -1.5 * percent;
+    return x;
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _scrollController = ScrollController();
+
+    _scrollController.addListener(() {
+      double currentScrollPosition = _scrollController.position.pixels;
+      currentScrollPosition = currentScrollPosition.clamp(0, 100);
+      double currentScrollPercentOfAppBar = currentScrollPosition / 100;
+      scrollPercent.value = currentScrollPercentOfAppBar;
+
+      print(currentScrollPercentOfAppBar);
+    });
 
     songs.add(Song(name: "Fix you", artistName: "Coldplay", duration: "4.11"));
     songs.add(Song(
@@ -64,96 +88,30 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
     songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
     songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+
+    _tabs = [
+      Tab(
+        text: 'Songs',
+      ),
+      Tab(
+        text: 'Artists',
+      ),
+      Tab(
+        text: 'Albums',
+      ),
+      Tab(
+        text: 'Genres',
+      ),
+      Tab(
+        text: 'Playlist',
+      )
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-            title: Text('BOOZ'),
-            centerTitle: true,
-            leading: Icon(
-              Icons.menu,
-              color: Colors.white,
-            ),
-            actions: <Widget>[
-              Icon(
-                Icons.search,
-                color: Colors.white,
-              ),
-              Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
-            ],
-            expandedHeight: 150,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsets.only(left: 16, top: 30, bottom: 55),
-              title: Text(
-                'Songs',
-                style: TextStyle(
-                  fontSize: 22,
-                ),
-              ),
-            ),
-            bottom: ColoredTabBar(
-              pink,
-              TabBar(controller: _tabController, tabs: [
-                Tab(
-                  text: 'Songs',
-                ),
-                Tab(
-                  text: 'Artists',
-                ),
-                Tab(
-                  text: 'Albums',
-                ),
-                Tab(
-                  text: 'Genres',
-                ),
-                Tab(
-                  text: 'Playlist',
-                )
-              ]),
-            ),
-          ),
-          SliverToBoxAdapter(
-              child: Column(
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(color: pink),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: 
-                Transform(
-                  transform: Matrix4.translationValues(0, -50, 0),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(0),
-                    shrinkWrap: true,
-                    itemBuilder: (context, index){
-                    return buildSongRow(songs[index]);
-                  }, itemCount: songs.length,),
-                ),
-              )
-            ],
-          )),
-/*          SliverPadding(
-            padding: const EdgeInsets.only(left: 30, right: 30, bottom: 25),
-            sliver: SliverList(
-              delegate:
-                  SliverChildBuilderDelegate((BuildContext context, int index) {
-                return buildSongRow(songs[index]);
-              }, childCount: songs.length),
-            ),
-          )*/
-        ],
-      ),
+      body: _buildHeader(),
     );
   }
 
@@ -161,39 +119,166 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void dispose() {
     super.dispose();
     _tabController.dispose();
+  }
 
+  buildTopRow() {
+    return Stack(
+      children: <Widget>[
+        ValueListenableBuilder(
+          valueListenable: scrollPercent,
+          builder: (BuildContext context, double value, Widget child) {
+            return Container(
+              width: double.infinity,
+              height: 50 * (1 - value),
+              decoration: BoxDecoration(color: pink),
+            );
+          },
+        ),
+        buildSongRow(songs[0])
+      ],
+    );
   }
 
   buildSongRow(Song song) {
-    return Container(
-      color: Theme.of(context).primaryColor,
-      child: ListTile(
-        leading: Icon(
-          Icons.disc_full,
-          color: Color(0xffe32a76),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 30),
+      child: Container(
+        color: Theme.of(context).primaryColor,
+        child: ListTile(
+          leading: Icon(
+            Icons.disc_full,
+            color: Color(0xffe32a76),
+          ),
+          title: Text(
+            song.name,
+            style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                color: Colors.white),
+          ),
+          subtitle: Text(
+            '${song.name} . ${song.duration}',
+            style: TextStyle(
+                fontSize: 10,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                color: Colors.white),
+          ),
+          trailing: IconButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              ),
+              onPressed: () {}),
         ),
-        title: Text(
-          song.name,
-          style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w600,
-              color: Colors.white),
-        ),
-        subtitle: Text(
-          '${song.name} . ${song.duration}',
-          style: TextStyle(
-              fontSize: 10,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w600,
-              color: Colors.white),
-        ),
-        trailing: IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.white,
-            ),
-            onPressed: () {}),
+      ),
+    );
+  }
+
+  _buildHeader() {
+    return NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              child: SliverAppBar(
+                title: Text('BOOZ'),
+                centerTitle: true,
+                leading: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                ),
+                actions: <Widget>[
+                  Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                  Icon(
+                    Icons.more_vert,
+                    color: Colors.white,
+                  ),
+                ],
+                expandedHeight: 150,
+                floating: false,
+                pinned: false,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding:
+                      const EdgeInsets.only(left: 16, top: 30, bottom: 55),
+                  title: ValueListenableBuilder(
+                    valueListenable: scrollPercent,
+                    builder:
+                        (BuildContext context, double value, Widget widget) {
+                      return FractionalTranslation(
+                        translation: Offset(_calculateX(value), 0),
+                        child: Text(
+                          'Songs',
+                          style: TextStyle(
+                            fontSize: 22,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                bottom: ColoredTabBar(
+                  pink,
+                  TabBar(controller: _tabController, tabs: [
+                    Tab(
+                      text: 'Songs',
+                    ),
+                    Tab(
+                      text: 'Artists',
+                    ),
+                    Tab(
+                      text: 'Albums',
+                    ),
+                    Tab(
+                      text: 'Genres',
+                    ),
+                    Tab(
+                      text: 'Playlist',
+                    )
+                  ]),
+                ),
+              ),
+            )
+          ];
+        },
+        body: TabBarView(controller: _tabController, children: [
+          _buildTabs("songs"),
+          _buildTabs("artists"),
+          _buildTabs("albums"),
+          _buildTabs("genre"),
+          _buildTabs("playlist"),
+        ]));
+  }
+
+  _buildTabs(String name) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: Builder(
+        builder: (BuildContext context) {
+          return CustomScrollView(
+            key: PageStorageKey<String>(name),
+            slivers: <Widget>[
+              SliverOverlapInjector(
+                  handle:
+                      NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                  if (index == 0) {
+                    return buildTopRow();
+                  }
+                  return buildSongRow(songs[index]);
+                }, childCount: songs.length),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

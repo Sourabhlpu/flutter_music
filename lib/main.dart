@@ -42,37 +42,75 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _scrollController = ScrollController();
 
     _scrollController.addListener(() {
-      double currentScrollPosition = _scrollController.position.pixels;
-      currentScrollPosition = currentScrollPosition.clamp(0, 100);
-      double currentScrollPercentOfAppBar = currentScrollPosition / 100;
-      scrollPercent.value = currentScrollPercentOfAppBar;
+      print(_scrollController.position.pixels);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            child: CustomAppBar(animation: scrollPercent, tabs: _getTabs()),
-          )
-        ];
+        body: NotificationListener(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification) {
+          _updateScroll();
+        } else if (notification is ScrollEndNotification) {
+          _snapAppBar();
+        }
       },
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTabs("songs"),
-          _buildTabs("artists"),
-          _buildTabs("albums"),
-          _buildTabs("genre"),
-          _buildTabs("playlist"),
-        ],
+      child: NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              child: CustomAppBar(
+                animation: scrollPercent,
+                tabs: _getTabs(),
+                tabController: _tabController,
+              ),
+            )
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildTabs("songs"),
+            _buildTabs("artists"),
+            _buildTabs("albums"),
+            _buildTabs("genre"),
+            _buildTabs("playlist"),
+          ],
+        ),
       ),
     ));
+  }
+
+  _updateScroll() {
+    double currentScrollPosition = _scrollController.position.pixels;
+    currentScrollPosition = currentScrollPosition.clamp(0.0, 100.0);
+    double currentScrollPercentOfAppBar = currentScrollPosition / 100.0;
+    scrollPercent.value = currentScrollPercentOfAppBar;
+  }
+
+  _snapAppBar() {
+    double currentPixelsScrolled = _scrollController.position.pixels;
+    //snapping when in the range of 0 - 100
+    if (currentPixelsScrolled < 30.0 && currentPixelsScrolled > 0.0) {
+      _scrollController.animateTo(0.0,
+          duration: Duration(milliseconds: 100), curve: Curves.easeOut);
+    } else if (currentPixelsScrolled >= 30 && currentPixelsScrolled < 100) {
+      _scrollController.animateTo(100.0,
+          duration: Duration(milliseconds: 100), curve: Curves.easeOut);
+    }
+
+    //snapping when in the range of 100 - 150
+    else if (currentPixelsScrolled > 100 && currentPixelsScrolled < 125) {
+      _scrollController.animateTo(100.0,
+          duration: Duration(milliseconds: 100), curve: Curves.easeOut);
+    } else if (currentPixelsScrolled >= 125 && currentPixelsScrolled < 150) {
+      _scrollController.animateTo(150.0,
+          duration: Duration(milliseconds: 100), curve: Curves.easeOut);
+    }
   }
 
   _buildTabs(String name) {

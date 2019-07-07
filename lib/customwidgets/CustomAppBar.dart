@@ -2,25 +2,16 @@ import 'package:flutter/material.dart';
 import 'ColoredTabBar.dart';
 import 'package:flutter_music/app_colors.dart';
 
-class CustomAppBar extends StatefulWidget {
+class CustomAppBar extends StatelessWidget {
   final ValueNotifier<double> animation;
   final List<Tab> tabs;
+  final TabController tabController;
 
-  CustomAppBar({@required this.animation, @required this.tabs});
-
-  @override
-  _CustomAppBarState createState() => _CustomAppBarState();
-}
-
-class _CustomAppBarState extends State<CustomAppBar>
-    with TickerProviderStateMixin {
-  TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-  }
+  CustomAppBar({
+    @required this.animation,
+    @required this.tabs,
+    @required this.tabController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,34 +25,42 @@ class _CustomAppBarState extends State<CustomAppBar>
       actions: _getAppBarActions(),
       expandedHeight: 150,
       flexibleSpace: new CustomFlexibleSpaceBar(
-        animation: widget.animation,
+        animation: animation,
       ),
       bottom: ColoredTabBar(
         pink,
-        TabBar(controller: _tabController, tabs: widget.tabs),
+        TabBar(
+          controller: tabController,
+          tabs: tabs,
+        ),
       ),
     );
   }
 
   List<Widget> _getAppBarActions() {
-    return List.generate(2, (int index) {
-      return index == 0
-          ? Icon(
-              Icons.search,
-              color: Colors.white,
-            )
-          : Icon(
-              Icons.more_vert,
-              color: Colors.white,
-            );
-    });
+    return List.generate(
+      2,
+      (int index) {
+        return index == 0
+            ? Icon(
+                Icons.search,
+                color: Colors.white,
+              )
+            : Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              );
+      },
+    );
   }
 }
 
 class CustomFlexibleSpaceBar extends StatelessWidget {
   final ValueNotifier<double> animation;
-  const CustomFlexibleSpaceBar({Key key, @required this.animation})
-      : super(key: key);
+  const CustomFlexibleSpaceBar({
+    Key key,
+    @required this.animation,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -32,18 +32,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<Song> songs = [];
   List<Tab> _tabs;
 
-  double _calculateX(double scrollPercent) {
-    scrollPercent = scrollPercent.clamp(0, 0.5);
-    double percent;
-    if (scrollPercent == 0)
-      percent = 0;
-    else
-      percent = scrollPercent / 0.5;
-
-    double x = -1.5 * percent;
-    return x;
-  }
-
   @override
   void initState() {
     // TODO: implement initState
@@ -282,20 +270,4 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-class ColoredTabBar extends Container implements PreferredSizeWidget {
-  ColoredTabBar(this.color, this.tabBar);
-
-  final Color color;
-  final TabBar tabBar;
-
-  @override
-  Size get preferredSize => tabBar.preferredSize;
-
-  @override
-  Widget build(BuildContext context) => Container(
-        color: color,
-        child: tabBar,
-      );
 }

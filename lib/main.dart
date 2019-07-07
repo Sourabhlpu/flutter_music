@@ -1,7 +1,10 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_music/song.dart';
 import 'app_colors.dart';
 import 'package:flutter/rendering.dart';
+import 'customwidgets/CustomAppBar.dart';
 
 void main() => runApp(MyApp());
 
@@ -28,14 +31,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   TabController _tabController;
   ScrollController _scrollController;
   ValueNotifier<double> scrollPercent = ValueNotifier(0);
-
   List<Song> songs = [];
-  List<Tab> _tabs;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _initSongsList();
     _tabController = TabController(length: 5, vsync: this);
     _scrollController = ScrollController();
 
@@ -44,69 +46,62 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       currentScrollPosition = currentScrollPosition.clamp(0, 100);
       double currentScrollPercentOfAppBar = currentScrollPosition / 100;
       scrollPercent.value = currentScrollPercentOfAppBar;
-
-      print(currentScrollPercentOfAppBar);
     });
-
-    songs.add(Song(name: "Fix you", artistName: "Coldplay", duration: "4.11"));
-    songs.add(Song(
-        name: "Kings & Queens",
-        artistName: "30 Seconds To Mars",
-        duration: "6.12"));
-    songs.add(Song(name: "Pieces", artistName: "Sum 41", duration: "4.00"));
-    songs.add(Song(
-        name: "Carnival of Rust",
-        artistName: "Poets of the Fall",
-        duration: "3.41"));
-    songs.add(Song(name: "Seether", artistName: "Broken", duration: "6.12"));
-    songs.add(Song(
-        name: "Breaking The Habbit",
-        artistName: "Linkin Park",
-        duration: "5.11"));
-    songs
-        .add(Song(name: "Hey Brother", artistName: "Avicii", duration: "5.00"));
-    songs.add(Song(name: "Clocks", artistName: "Coldplay", duration: "3.11"));
-    songs.add(Song(name: "For You", artistName: "Coldplay", duration: "4.11"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
-
-    _tabs = [
-      Tab(
-        text: 'Songs',
-      ),
-      Tab(
-        text: 'Artists',
-      ),
-      Tab(
-        text: 'Albums',
-      ),
-      Tab(
-        text: 'Genres',
-      ),
-      Tab(
-        text: 'Playlist',
-      )
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildHeader(),
-    );
+        body: NestedScrollView(
+      controller: _scrollController,
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return <Widget>[
+          SliverOverlapAbsorber(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+            child: CustomAppBar(animation: scrollPercent, tabs: _getTabs()),
+          )
+        ];
+      },
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildTabs("songs"),
+          _buildTabs("artists"),
+          _buildTabs("albums"),
+          _buildTabs("genre"),
+          _buildTabs("playlist"),
+        ],
+      ),
+    ));
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _tabController.dispose();
+  _buildTabs(String name) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: Builder(
+        builder: (BuildContext context) {
+          return CustomScrollView(
+            key: PageStorageKey<String>(name),
+            slivers: <Widget>[
+              SliverOverlapInjector(
+                  handle:
+                      NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return index == 0
+                        ? buildTopRow()
+                        : buildSongRow(songs[index]);
+                  },
+                  childCount: songs.length,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   buildTopRow() {
@@ -164,110 +159,64 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 
-  _buildHeader() {
-    return NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverOverlapAbsorber(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              child: SliverAppBar(
-                title: Text('BOOZ'),
-                centerTitle: true,
-                leading: Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                ),
-                actions: <Widget>[
-                  Icon(
-                    Icons.search,
-                    color: Colors.white,
-                  ),
-                  Icon(
-                    Icons.more_vert,
-                    color: Colors.white,
-                  ),
-                ],
-                expandedHeight: 150,
-                floating: false,
-                pinned: false,
-                flexibleSpace: FlexibleSpaceBar(
-                  titlePadding:
-                      const EdgeInsets.only(left: 16, top: 30, bottom: 55),
-                  title: ValueListenableBuilder(
-                    valueListenable: scrollPercent,
-                    builder:
-                        (BuildContext context, double value, Widget widget) {
-                      return FractionalTranslation(
-                        translation: Offset(_calculateX(value), 0),
-                        child: Text(
-                          'Songs',
-                          style: TextStyle(
-                            fontSize: 22,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                bottom: ColoredTabBar(
-                  pink,
-                  TabBar(controller: _tabController, tabs: [
-                    Tab(
-                      text: 'Songs',
-                    ),
-                    Tab(
-                      text: 'Artists',
-                    ),
-                    Tab(
-                      text: 'Albums',
-                    ),
-                    Tab(
-                      text: 'Genres',
-                    ),
-                    Tab(
-                      text: 'Playlist',
-                    )
-                  ]),
-                ),
-              ),
-            )
-          ];
-        },
-        body: TabBarView(controller: _tabController, children: [
-          _buildTabs("songs"),
-          _buildTabs("artists"),
-          _buildTabs("albums"),
-          _buildTabs("genre"),
-          _buildTabs("playlist"),
-        ]));
+  @override
+  void dispose() {
+    super.dispose();
+    _tabController.dispose();
   }
 
-  _buildTabs(String name) {
-    return SafeArea(
-      top: false,
-      bottom: false,
-      child: Builder(
-        builder: (BuildContext context) {
-          return CustomScrollView(
-            key: PageStorageKey<String>(name),
-            slivers: <Widget>[
-              SliverOverlapInjector(
-                  handle:
-                      NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                  if (index == 0) {
-                    return buildTopRow();
-                  }
-                  return buildSongRow(songs[index]);
-                }, childCount: songs.length),
-              ),
-            ],
-          );
-        },
+  List<Tab> _getTabs() {
+    List<Tab> _tabs = [
+      Tab(
+        text: 'Songs',
       ),
-    );
+      Tab(
+        text: 'Artists',
+      ),
+      Tab(
+        text: 'Albums',
+      ),
+      Tab(
+        text: 'Genres',
+      ),
+      Tab(
+        text: 'Playlist',
+      )
+    ];
+
+    return _tabs;
+  }
+
+  _initSongsList() {
+    songs.add(Song(name: "Fix you", artistName: "Coldplay", duration: "4.11"));
+    songs.add(Song(
+        name: "Kings & Queens",
+        artistName: "30 Seconds To Mars",
+        duration: "6.12"));
+    songs.add(Song(name: "Pieces", artistName: "Sum 41", duration: "4.00"));
+    songs.add(Song(
+        name: "Carnival of Rust",
+        artistName: "Poets of the Fall",
+        duration: "3.41"));
+    songs.add(Song(name: "Seether", artistName: "Broken", duration: "6.12"));
+    songs.add(Song(
+        name: "Breaking The Habbit",
+        artistName: "Linkin Park",
+        duration: "5.11"));
+    songs
+        .add(Song(name: "Hey Brother", artistName: "Avicii", duration: "5.00"));
+    songs.add(Song(name: "Clocks", artistName: "Coldplay", duration: "3.11"));
+    songs.add(Song(name: "For You", artistName: "Coldplay", duration: "4.11"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+    songs.add(Song(name: "Trouble", artistName: "Coldplay", duration: "4.16"));
+
+    return songs;
   }
 }

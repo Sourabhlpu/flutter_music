@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_music/core/viewmodels/home_model.dart';
 import 'package:flutter_music/ui/views/songs.dart';
-import 'package:flutter_music/ui/widgets/CustomAppBar.dart';
+import 'package:flutter_music/ui/widgets/custom_app_bar.dart';
 import 'base_view.dart';
 
 class HomeView extends StatefulWidget {

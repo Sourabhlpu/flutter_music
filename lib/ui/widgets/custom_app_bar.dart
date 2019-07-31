@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_music/ui/widgets/ColoredTabBar.dart';
+import 'package:flutter_music/ui/widgets/colored_tab_bar.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget {

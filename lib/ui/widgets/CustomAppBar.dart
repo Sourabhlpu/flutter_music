@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'ColoredTabBar.dart';
-import 'package:flutter_music/app_colors.dart';
+import 'package:flutter_music/ui/widgets/ColoredTabBar.dart';
+import 'package:flutter_music/ui/shared/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget {
   final ValueNotifier<double> animation;

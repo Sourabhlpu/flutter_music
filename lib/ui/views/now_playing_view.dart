@@ -24,7 +24,7 @@ class NowPlaying extends StatelessWidget {
             SizedBox(width: double.infinity),
             VinylSeekbar(),
             SizedBox(height: 12),
-            SongControls(title: 'Jo Bhi Mai', album: 'Rockstar'),
+            SongControls(title: 'Magic', album: 'Ghost Stories'),
             buildHeading("UP NEXT", 10),
             SongTile(
               title: 'Magic',

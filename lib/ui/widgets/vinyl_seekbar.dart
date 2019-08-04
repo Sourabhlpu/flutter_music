@@ -1,22 +1,29 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_music/core/viewmodels/vinyl_seekbar_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
+import 'package:flutter_music/ui/views/base_view.dart';
+import 'package:flutter_music/ui/shared/radial_drag.dart';
 
 class VinylSeekbar extends StatelessWidget {
-  const VinylSeekbar({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        vinyl(),
-        buildCurrentTime(),
-        buildTotalTime(),
-        buildShuffle(),
-        buildRepeat()
-      ],
+    return BaseView<VinylSeekbarModel>(
+      builder: (context, model, widget) => Stack(
+            children: <Widget>[
+              RadialDragGestureDetector(
+                  onRadialDragStart: model.handleDrags,
+                  onRadialDragEnd: () {},
+                  onRadialDragUpdate: model.handleDrags,
+                  child: vinyl(
+                    progressPercent: model.progressPercent,
+                  )),
+              buildCurrentTime(),
+              buildTotalTime(),
+              buildShuffle(),
+              buildRepeat()
+            ],
+          ),
     );
   }
 
@@ -65,16 +72,15 @@ class VinylSeekbar extends StatelessWidget {
 }
 
 class vinyl extends StatelessWidget {
-  const vinyl({
-    Key key,
-  }) : super(key: key);
+  final double progressPercent;
+  const vinyl({this.progressPercent});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: CustomPaint(
-        foregroundPainter: AlbumArtPainter(progress: 0.9),
+        foregroundPainter: AlbumArtPainter(progress: progressPercent),
         child: Padding(
           padding: const EdgeInsets.all(35),
           child: CircleAvatar(

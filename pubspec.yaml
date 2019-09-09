@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -25,6 +25,9 @@ dependencies:
   songs_meta:
     path: ../songs_meta
   simple_permissions: ^0.1.6
+  audioplayers: ^0.13.1
+  intl: ^0.16.0
+
 
 
 

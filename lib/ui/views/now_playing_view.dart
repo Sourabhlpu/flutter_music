@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_music/core/viewmodels/now_playing_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
 import 'package:flutter_music/ui/widgets/song_controls.dart';
 import 'package:flutter_music/ui/widgets/vinyl_seekbar.dart';
+import 'package:songs_meta/song.dart';
+
+import 'base_view.dart';
 
 class NowPlaying extends StatelessWidget {
+  final Song song;
+
+  NowPlaying({@required this.song});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,28 +25,38 @@ class NowPlaying extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(width: double.infinity),
-            VinylSeekbar(),
-            SizedBox(height: 12),
-            SongControls(title: 'Magic', album: 'Ghost Stories'),
-            buildHeading("UP NEXT", 10),
-            SongTile(
-              title: 'Magic',
-              image: 'images/album_art.jpg',
-              album: 'Ghost Stories',
+      body: BaseView<NowPlayingModel>(
+        onModelReady: (model) {
+          model.playSong(song);
+        },
+        onDisponse: (model) {
+          model.releasePlayer();
+        },
+        builder: (context, model, widget) => SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(width: double.infinity),
+                  VinylSeekbar(
+                    song: song,
+                  ),
+                  SizedBox(height: 12),
+                  SongControls(title: song.title, album: song.album),
+                  buildHeading("UP NEXT", 10),
+                  SongTile(
+                    title: 'Magic',
+                    image: 'images/album_art.jpg',
+                    album: 'Ghost Stories',
+                  ),
+                  buildHeading("PREVIOUS", 0),
+                  SongTile(
+                    title: 'Magic',
+                    image: 'images/album_art.jpg',
+                    album: 'Ghost Stories',
+                  ),
+                ],
+              ),
             ),
-            buildHeading("PREVIOUS", 0),
-            SongTile(
-              title: 'Magic',
-              image: 'images/album_art.jpg',
-              album: 'Ghost Stories',
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -83,6 +101,7 @@ class SongTile extends StatelessWidget {
   final String title;
   final String image;
   final String album;
+
   const SongTile({
     this.title,
     this.image,

@@ -13,4 +13,10 @@ class SongsModel extends BaseModel {
     songs = await songService.fetchSongs();
     setState(ViewState.Idle);
   }
+
+  String formatSongDuration(Song song) {
+    int duration = int.parse(song.duration);
+    double d = duration / 60000;
+    return d.toStringAsFixed(2);
+  }
 }

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_music/core/enums/viewstate.dart';
+import 'package:flutter_music/core/viewmodels/now_playing_model.dart';
+import 'package:flutter_music/core/viewmodels/song_controls_model.dart';
+import 'package:flutter_music/ui/views/base_view.dart';
+import 'package:provider/provider.dart';
 
 class SongControls extends StatelessWidget {
   final String title;
   final String album;
 
   SongControls({this.title, this.album});
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    NowPlayingModel model = Provider.of<NowPlayingModel>(context);
     return Column(
       children: <Widget>[
         Text(
@@ -36,10 +43,18 @@ class SongControls extends StatelessWidget {
             SizedBox(width: 16.0),
             IconButton(
               iconSize: 50,
-              icon: Icon(
-                Icons.pause,
-                color: Colors.white,
-              ),
+              icon: model.state == ViewState.Playing
+                  ? Icon(
+                      Icons.pause,
+                      color: Colors.white,
+                    )
+                  : Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+              onPressed: () {
+                model.onPlayPauseClicked();
+              },
             ),
             SizedBox(width: 16.0),
             IconButton(

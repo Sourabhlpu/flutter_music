@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_music/core/enums/viewstate.dart';
 import 'package:flutter_music/core/viewmodels/songs_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
+import 'package:provider/provider.dart';
 import 'package:songs_meta/song.dart';
 
 import 'base_view.dart';
@@ -63,11 +64,12 @@ class Songs extends StatelessWidget {
   }
 
   buildSongRow(Song song, BuildContext context) {
+    SongsModel model = Provider.of<SongsModel>(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: GestureDetector(
         onTap: () {
-          Navigator.pushNamed(context, 'now_playing');
+          Navigator.pushNamed(context, 'now_playing', arguments: song);
         },
         child: Container(
           color: primaryColor,
@@ -85,7 +87,7 @@ class Songs extends StatelessWidget {
                   color: Colors.white),
             ),
             subtitle: Text(
-              '${song.title} . ${song.duration}',
+              '${song.title} . ${model.formatSongDuration(song)}',
               style: TextStyle(
                   fontSize: 10,
                   fontFamily: 'Poppins',

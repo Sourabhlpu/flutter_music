@@ -4,22 +4,32 @@ import 'package:flutter_music/core/viewmodels/vinyl_seekbar_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
 import 'package:flutter_music/ui/views/base_view.dart';
 import 'package:flutter_music/ui/shared/radial_drag.dart';
+import 'package:songs_meta/song.dart';
 
 class VinylSeekbar extends StatelessWidget {
+  final Song song;
+
+  VinylSeekbar({this.song});
+
   @override
   Widget build(BuildContext context) {
     return BaseView<VinylSeekbarModel>(
+      onModelReady: (model) {
+        model.initModel(song);
+      },
       builder: (context, model, widget) => Stack(
             children: <Widget>[
               RadialDragGestureDetector(
                   onRadialDragStart: model.handleDrags,
-                  onRadialDragEnd: () {},
+                  onRadialDragEnd: () {
+                    model.handleDragEnd();
+                  },
                   onRadialDragUpdate: model.handleDrags,
                   child: vinyl(
                     progressPercent: model.progressPercent,
                   )),
-              buildCurrentTime(),
-              buildTotalTime(),
+              buildCurrentTime(model),
+              buildTotalTime(model),
               buildShuffle(),
               buildRepeat()
             ],
@@ -49,22 +59,22 @@ class VinylSeekbar extends StatelessWidget {
     );
   }
 
-  Positioned buildTotalTime() {
+  Positioned buildTotalTime(VinylSeekbarModel model) {
     return Positioned(
       top: 148,
       right: 0,
       child: Text(
-        '05.58',
+        '${model.convertMilliSecondsToMMss(model.maxDuration)}',
         style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
   }
 
-  Positioned buildCurrentTime() {
+  Positioned buildCurrentTime(VinylSeekbarModel model) {
     return Positioned(
       top: 148,
       child: Text(
-        '00.54',
+        '${model.convertMilliSecondsToMMss(model.currentDuration)}',
         style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );

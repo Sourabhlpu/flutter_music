@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 
+import 'core/services/audio_playback_service.dart';
 import 'core/services/fetch_songs.dart';
 import 'core/viewmodels/home_model.dart';
 import 'core/viewmodels/now_playing_model.dart';
+import 'core/viewmodels/repeat_button_model.dart';
 import 'core/viewmodels/song_controls_model.dart';
 import 'core/viewmodels/songs_model.dart';
 import 'core/viewmodels/vinyl_seekbar_model.dart';
@@ -18,4 +20,6 @@ void setupLocator() {
   locator.registerLazySingleton(() => AudioPlayer());
   locator.registerFactory(() => SongControlsModel());
   locator.registerFactory(() => NowPlayingModel());
+  locator.registerFactory(() => RepeatButtonModel());
+  locator.registerLazySingleton(() => AudioPlaybackService());
 }

@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_music/core/enums/viewstate.dart';
+import 'package:flutter_music/core/viewmodels/repeat_button_model.dart';
 import 'package:flutter_music/core/viewmodels/vinyl_seekbar_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
 import 'package:flutter_music/ui/views/base_view.dart';
@@ -13,50 +15,62 @@ class VinylSeekbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaseView<VinylSeekbarModel>(
-      onModelReady: (model) {
-        model.initModel(song);
-      },
-      builder: (context, model, widget) => Stack(
-            children: <Widget>[
-              RadialDragGestureDetector(
-                  onRadialDragStart: model.handleDrags,
-                  onRadialDragEnd: () {
-                    model.handleDragEnd();
-                  },
-                  onRadialDragUpdate: model.handleDrags,
-                  child: vinyl(
-                    progressPercent: model.progressPercent,
-                  )),
-              buildCurrentTime(model),
-              buildTotalTime(model),
-              buildShuffle(),
-              buildRepeat()
-            ],
-          ),
+    return Stack(
+      children: <Widget>[
+        BaseView<VinylSeekbarModel>(
+          onModelReady: (model) {
+            model.initModel();
+          },
+          builder: (context, model, widget) => Stack(
+                children: <Widget>[
+                  RadialDragGestureDetector(
+                      onRadialDragStart: model.handleDrags,
+                      onRadialDragEnd: () {
+                        model.handleDragEnd();
+                      },
+                      onRadialDragUpdate: model.handleDrags,
+                      child: vinyl(
+                        progressPercent: model.progressPercent,
+                      )),
+                  buildCurrentTime(model),
+                  buildTotalTime(model),
+                ],
+              ),
+        ),
+        buildShuffle(),
+        buildRepeat(context)
+      ],
     );
   }
 
-  Positioned buildRepeat() {
-    return Positioned(
-      bottom: 8,
-      right: 20,
-      child: Icon(
-        Icons.repeat,
-        color: pink,
-      ),
+  Widget buildRepeat(BuildContext context) {
+    return BaseView<RepeatButtonModel>(
+      onModelReady: (model) {
+        model.setState(ViewState.RepeatAll);
+      },
+      builder: (context, model, widget) => Positioned(
+            bottom: 0,
+            right: 4,
+            child: IconButton(
+              icon: _getRepeatIcon(model),
+              onPressed: () {
+                model.onRepeatPressed();
+              },
+            ),
+          ),
     );
   }
 
   Positioned buildShuffle() {
     return Positioned(
-      bottom: 8,
-      left: 20,
-      child: Icon(
-        Icons.shuffle,
-        color: pink,
-      ),
-    );
+        bottom: 0,
+        left: 4,
+        child: IconButton(
+            icon: Icon(
+              Icons.shuffle,
+              color: pink,
+            ),
+            onPressed: () {}));
   }
 
   Positioned buildTotalTime(VinylSeekbarModel model) {
@@ -64,7 +78,7 @@ class VinylSeekbar extends StatelessWidget {
       top: 148,
       right: 0,
       child: Text(
-        '${model.convertMilliSecondsToMMss(model.maxDuration)}',
+        '${model.maxDuration}',
         style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
@@ -74,10 +88,21 @@ class VinylSeekbar extends StatelessWidget {
     return Positioned(
       top: 148,
       child: Text(
-        '${model.convertMilliSecondsToMMss(model.currentDuration)}',
+        '${model.currentDuration}',
         style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
+  }
+
+  Icon _getRepeatIcon(RepeatButtonModel model) {
+    if (model.state == ViewState.RepeatNone)
+      return Icon(Icons.repeat, color: Colors.grey);
+    else if (model.state == ViewState.RepeatAll)
+      return Icon(Icons.repeat, color: pink);
+    else if (model.state == ViewState.RepeatOne)
+      return Icon(Icons.repeat_one, color: pink);
+    else
+      return Icon(Icons.repeat, color: pink);
   }
 }
 

@@ -27,7 +27,7 @@ class NowPlaying extends StatelessWidget {
       ),
       body: BaseView<NowPlayingModel>(
         onModelReady: (model) {
-          model.playSong(song);
+          model.initPlayer(song);
         },
         onDisponse: (model) {
           model.releasePlayer();

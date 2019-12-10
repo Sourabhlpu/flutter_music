@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_music/core/enums/viewstate.dart';
 import 'package:flutter_music/core/viewmodels/now_playing_model.dart';
-import 'package:flutter_music/core/viewmodels/song_controls_model.dart';
-import 'package:flutter_music/ui/views/base_view.dart';
 import 'package:provider/provider.dart';
 
 class SongControls extends StatelessWidget {

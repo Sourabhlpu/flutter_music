@@ -3,6 +3,7 @@ import 'package:flutter_music/core/viewmodels/now_playing_model.dart';
 import 'package:flutter_music/ui/shared/app_colors.dart';
 import 'package:flutter_music/ui/widgets/song_controls.dart';
 import 'package:flutter_music/ui/widgets/vinyl_seekbar.dart';
+import 'package:provider/provider.dart';
 import 'package:songs_meta/song.dart';
 
 import 'base_view.dart';
@@ -27,7 +28,7 @@ class NowPlaying extends StatelessWidget {
       ),
       body: BaseView<NowPlayingModel>(
         onModelReady: (model) {
-          model.initPlayer(song);
+          model.initPlayer(song, Provider.of<List<Song>>(context));
         },
         onDisponse: (model) {
           model.releasePlayer();

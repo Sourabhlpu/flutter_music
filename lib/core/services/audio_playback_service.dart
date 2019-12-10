@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_music/core/enums/viewstate.dart';
 import 'package:flutter_music/ui/shared/radial_drag.dart';
 import 'package:songs_meta/song.dart';
 
@@ -15,6 +16,8 @@ class AudioPlaybackService {
   double _progressPercent;
   Duration _currentDuration;
   bool _isDragging = false;
+  ViewState _repeatState;
+  List<Song> _songs;
 
   StreamController<String> maxDurationController = StreamController<String>();
   StreamController<String> currentDurationController =
@@ -23,14 +26,17 @@ class AudioPlaybackService {
       StreamController<double>();
 
   get currentState => _currentState;
+  set repeatState(state) => _repeatState = state;
 
-  initPlayer(Song song) {
+  initPlayer(Song song, List<Song> songs) {
+    _songs = songs;
     _audioPlayer = locator.get<AudioPlayer>();
     this._song = song;
     playSong();
     _listenPlayerState();
     _setMaxDuration();
     _listenToAudioPosition();
+    _listenSongCompletion();
   }
 
   void playSong() {
@@ -52,7 +58,7 @@ class AudioPlaybackService {
   _setMaxDuration() {
     int duration = int.parse(_song.duration);
     _maxDuration = Duration(milliseconds: duration);
-    maxDurationController.add(convertMilliSecondsToMMss(_maxDuration));
+    maxDurationController.add(_convertMilliSecondsToMMss(_maxDuration));
     _audioPlayer.onDurationChanged.listen((Duration d) {});
   }
 
@@ -68,7 +74,7 @@ class AudioPlaybackService {
     int currentTimeProgress =
         (_maxDuration.inMilliseconds * _progressPercent).toInt();
     _currentDuration = Duration(milliseconds: currentTimeProgress);
-    currentDurationController.add(convertMilliSecondsToMMss(_currentDuration));
+    currentDurationController.add(_convertMilliSecondsToMMss(_currentDuration));
     _audioPlayer.seek(_currentDuration).then((value) {
       _isDragging = false;
     });
@@ -83,11 +89,30 @@ class AudioPlaybackService {
 
       progressPercentController.add(_progressPercent);
       currentDurationController
-          .add(convertMilliSecondsToMMss(_currentDuration));
+          .add(_convertMilliSecondsToMMss(_currentDuration));
     });
   }
 
-  String convertMilliSecondsToMMss(Duration duration) {
+  void _listenSongCompletion() {
+    _audioPlayer.onPlayerCompletion.listen((event) {
+      if (_repeatState == ViewState.RepeatOne)
+        _audioPlayer.play(_song.path);
+      else if (_repeatState == ViewState.RepeatAll) {
+        _repeatAllSongs();
+      }
+    });
+  }
+
+  void _repeatAllSongs() {
+    int currentIndex = _songs.indexOf(_song);
+    int lastIndex = _songs.length - 1;
+    if (lastIndex == currentIndex)
+      _audioPlayer.play(_songs[0].path);
+    else
+      _audioPlayer.play(_songs[currentIndex + 1].path);
+  }
+
+  String _convertMilliSecondsToMMss(Duration duration) {
     if (duration == null) return "00:00";
     String minutes = duration.inMinutes.toString();
     int seconds = duration.inSeconds.remainder(60).toInt();

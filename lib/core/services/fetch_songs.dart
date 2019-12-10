@@ -8,6 +8,9 @@ class FetchSongsService {
 
   Future<List<Song>> fetchSongs() async {
     List<Song> songs = await SongsMeta.songsList;
+    songs.sort((a, b) {
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
     songsController.add(songs);
     return songs;
   }

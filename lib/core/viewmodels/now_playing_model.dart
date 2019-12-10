@@ -7,9 +7,9 @@ import '../services/audio_playback_service.dart';
 class NowPlayingModel extends BaseModel {
   AudioPlaybackService audioPlaybackService;
 
-  void initPlayer(Song song) {
+  void initPlayer(Song song, List<Song> songs) {
     audioPlaybackService = locator<AudioPlaybackService>();
-    audioPlaybackService.initPlayer(song);
+    audioPlaybackService.initPlayer(song, songs);
   }
 
   void onPlayPauseClicked() {

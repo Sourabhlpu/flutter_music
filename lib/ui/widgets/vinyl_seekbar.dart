@@ -24,11 +24,11 @@ class VinylSeekbar extends StatelessWidget {
           builder: (context, model, widget) => Stack(
                 children: <Widget>[
                   RadialDragGestureDetector(
-                      onRadialDragStart: model.handleDrags,
+                      onRadialDragStart: model.handleDragUpdate,
                       onRadialDragEnd: () {
                         model.handleDragEnd();
                       },
-                      onRadialDragUpdate: model.handleDrags,
+                      onRadialDragUpdate: model.handleDragUpdate,
                       child: vinyl(
                         progressPercent: model.progressPercent,
                       )),

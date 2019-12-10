@@ -31,7 +31,7 @@ class VinylSeekbarModel extends BaseModel {
     });
   }
 
-  handleDrags(PolarCoord polarCoordinates) {
+  handleDragUpdate(PolarCoord polarCoordinates) {
     audioPlaybackService.handleDrags(polarCoordinates);
   }
 

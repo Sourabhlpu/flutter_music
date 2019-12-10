@@ -34,11 +34,21 @@ class Songs extends StatelessWidget {
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
-                        return index == 0
-                            ? buildTopRow(model.songs[0], context)
-                            : buildSongRow(model.songs[index], context);
+                        final newIndex = index ~/ 2;
+                        if (index == 0)
+                          return buildTopRow(model.songs[0], context);
+                        if (index.isOdd)
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 36),
+                            child: Divider(
+                              height: 1,
+                              color: Colors.grey,
+                            ),
+                          );
+                        else
+                          return buildSongRow(model.songs[newIndex], context);
                       },
-                      childCount: model.songs.length,
+                      childCount: 2 * model.songs.length - 1,
                     ),
                   )
                 ],
@@ -74,9 +84,11 @@ class Songs extends StatelessWidget {
         child: Container(
           color: primaryColor,
           child: ListTile(
+            dense: true,
             leading: Icon(
-              Icons.disc_full,
+              Icons.album,
               color: Color(0xffe32a76),
+              size: 30,
             ),
             title: Text(
               song.title,

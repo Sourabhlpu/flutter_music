@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_music/core/enums/viewstate.dart';
 import 'package:flutter_music/core/viewmodels/songs_model.dart';
@@ -16,46 +18,27 @@ class Songs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BaseView<SongsModel>(
-        onModelReady: (model) {
-          model.getSongs();
-        },
-        builder: (context, model, child) => model.state == ViewState.Busy
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(),
-              )
-            : CustomScrollView(
-                key: PageStorageKey<String>(name),
-                slivers: <Widget>[
-                  SliverOverlapInjector(
-                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                          context)),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        final newIndex = index ~/ 2;
-                        if (index == 0)
-                          return buildTopRow(model.songs[0], context);
-                        if (index.isOdd)
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 36),
-                            child: Divider(
-                              height: 1,
-                              color: Colors.grey,
-                            ),
-                          );
-                        else
-                          return buildSongRow(model.songs[newIndex], context);
-                      },
-                      childCount: 2 * model.songs.length - 1,
-                    ),
-                  )
-                ],
-              ));
+      onModelReady: (model) {
+        model.getSongs();
+      },
+      builder: (context, model, child) => model.state == ViewState.Busy
+          ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(),
+            )
+          : CustomScrollView(
+              key: PageStorageKey<String>(name),
+              slivers: <Widget>[
+                SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context)),
+              ]..addAll(_getSlivers(model.songs, context)),
+            ),
+    );
   }
 
-  buildTopRow(Song song, BuildContext context) {
+  buildTopRow(Song song, BuildContext context, String key) {
     return Stack(
       children: <Widget>[
         ValueListenableBuilder(
@@ -68,7 +51,10 @@ class Songs extends StatelessWidget {
             );
           },
         ),
-        buildSongRow(song, context)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[_buildIndexRow(key), buildSongRow(song, context)],
+        )
       ],
     );
   }
@@ -116,5 +102,46 @@ class Songs extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _buildIndexRow(String index) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 30),
+      child: Container(
+        color: primaryColor,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20.0, top: 8.0, bottom: 8.0),
+          child: Text(index.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white,
+              )),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _getSlivers(
+      HashMap<String, List<Song>> map, BuildContext context) {
+    bool shouldBuildTopRow = true;
+    var sortedKeys = map.keys.toList()..sort();
+    List slivers = sortedKeys
+        .map(
+          (key) => SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    if (shouldBuildTopRow) {
+                      shouldBuildTopRow = false;
+                      return buildTopRow(map[key][index], context, key);
+                    } else if (index == 0)
+                      return _buildIndexRow(key);
+                    else
+                      return buildSongRow(map[key][index - 1], context);
+                  },
+                  childCount: map[key].length + 1,
+                ),
+              ),
+        )
+        .toList();
+    return slivers;
   }
 }
